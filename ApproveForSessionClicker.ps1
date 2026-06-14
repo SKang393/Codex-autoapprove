@@ -81,6 +81,16 @@ function Get-RectangleCenter {
     }
 }
 
+function Get-ApproveIntervalOptions {
+    @(
+        [pscustomobject]@{ Label = '30 seconds'; Seconds = 30 },
+        [pscustomobject]@{ Label = '1 minute'; Seconds = 60 },
+        [pscustomobject]@{ Label = '5 minutes'; Seconds = 300 },
+        [pscustomobject]@{ Label = '30 minutes'; Seconds = 1800 },
+        [pscustomobject]@{ Label = '1 hour'; Seconds = 3600 }
+    )
+}
+
 function Import-NotificationLayoutScannerApi {
     Add-Type -AssemblyName System.Drawing
 

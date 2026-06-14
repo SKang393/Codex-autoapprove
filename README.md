@@ -4,11 +4,28 @@ Small Windows helper for clicking the Codex `Approve for session` button wheneve
 
 ## Status
 
-- Current release: `v1.0.1`
+- Current release: `v1.1.0`
 - Platform: Windows
 - License: Apache License 2.0
 
 ## Use
+
+Recommended GUI launch:
+
+- Double-click `Start Codex Auto Approve GUI.vbs` for the wrapped version. This starts the GUI without showing a command window.
+- Double-click `Start Codex Auto Approve GUI.cmd` for the unwrapped version. This starts the same GUI with a visible command window.
+
+The GUI lets you pick one of these scan intervals:
+
+- 30 seconds
+- 1 minute
+- 5 minutes
+- 30 minutes
+- 1 hour
+
+Click `Start` to begin scanning. Use `Hide to tray` or minimize the window to keep the program running in the system tray. Double-click the tray icon to show the GUI again. Use the tray menu or the `Exit` button to fully close it.
+
+Command-line launch:
 
 Double-click `Click Approve For Session.cmd` and leave the window open.
 
@@ -40,6 +57,18 @@ Check more or less often:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\ApproveForSessionClicker.ps1 -IntervalSeconds 10
 ```
 
+Run the GUI directly:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CodexAutoApproveGui.ps1
+```
+
+Build wrapped and unwrapped release packages:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version v1.1.0
+```
+
 Run tests:
 
 ```powershell
@@ -58,6 +87,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 - `v0.2.0`: Persistent mode that checks every 30 seconds until stopped.
 - `v1.0.0`: Release build with UI Automation plus visible notification-layout fallback for Windows approval notifications.
 - `v1.0.1`: Handles transient Windows UI Automation `FindAll` failures by continuing to screenshot-layout fallback instead of crashing.
+- `v1.1.0`: Adds Windows GUI, fixed interval picker, system tray background mode, hidden wrapped launcher, visible unwrapped launcher, and wrapped/unwrapped release packages.
 
 ## Safety Disclaimer
 
@@ -66,6 +96,11 @@ This tool automatically approves Codex session permissions when it detects the s
 ## Release
 
 See [RELEASE.md](RELEASE.md) for release notes.
+
+The release package builder creates:
+
+- `dist/CodexAutoApprove-v1.1.0-wrapped.zip`: GUI plus `.vbs` launcher that hides the command window.
+- `dist/CodexAutoApprove-v1.1.0-unwrapped.zip`: GUI and command-line launchers with visible command windows.
 
 ## License
 

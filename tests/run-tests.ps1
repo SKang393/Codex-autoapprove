@@ -80,6 +80,34 @@ $fallbackResult = Find-ApproveButtonCandidateWithFallback `
 Assert-Equal $fallbackResult.Source 'ScreenshotLayout' 'UI Automation failures should fall back to screenshot layout detection.'
 Assert-Equal $fallbackResult.Bounds.Left 300 'Fallback candidate should be returned when UI Automation throws.'
 
+$intervalOptions = @(Get-ApproveIntervalOptions)
+Assert-Equal $intervalOptions.Count 5 'GUI interval picker should expose five fixed choices.'
+Assert-Equal $intervalOptions[0].Label '30 seconds' 'First interval should be 30 seconds.'
+Assert-Equal $intervalOptions[0].Seconds 30 '30 seconds option should map to 30.'
+Assert-Equal $intervalOptions[1].Label '1 minute' 'Second interval should be 1 minute.'
+Assert-Equal $intervalOptions[1].Seconds 60 '1 minute option should map to 60.'
+Assert-Equal $intervalOptions[2].Seconds 300 '5 minute option should map to 300.'
+Assert-Equal $intervalOptions[3].Seconds 1800 '30 minute option should map to 1800.'
+Assert-Equal $intervalOptions[4].Seconds 3600 '1 hour option should map to 3600.'
+
+$hiddenLauncherPath = Join-Path $repoRoot 'Start Codex Auto Approve GUI.vbs'
+if (-not (Test-Path $hiddenLauncherPath)) {
+    throw 'Hidden GUI launcher should exist.'
+}
+$hiddenLauncher = Get-Content $hiddenLauncherPath -Raw
+if ($hiddenLauncher -notmatch 'powershell\.exe' -or $hiddenLauncher -notmatch 'CodexAutoApproveGui\.ps1' -or $hiddenLauncher -notmatch ', 0, False') {
+    throw 'Hidden GUI launcher should start the GUI through PowerShell without showing a console window.'
+}
+
+$visibleLauncherPath = Join-Path $repoRoot 'Start Codex Auto Approve GUI.cmd'
+if (-not (Test-Path $visibleLauncherPath)) {
+    throw 'Unwrapped GUI launcher should exist.'
+}
+$visibleLauncher = Get-Content $visibleLauncherPath -Raw
+if ($visibleLauncher -notmatch 'CodexAutoApproveGui\.ps1') {
+    throw 'Unwrapped GUI launcher should start the GUI script directly.'
+}
+
 Add-Type -AssemblyName System.Drawing
 $bitmap = New-Object System.Drawing.Bitmap(500, 260)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
