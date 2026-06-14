@@ -543,7 +543,7 @@ function Get-AncestorWindowName {
     return ''
 }
 
-function Find-ApproveButtonCandidate {
+function Find-ApproveButtonCandidateByUiAutomation {
     Import-UiAutomation
 
     $root = [System.Windows.Automation.AutomationElement]::RootElement
@@ -578,12 +578,34 @@ function Find-ApproveButtonCandidate {
         }
     }
 
-    $uiaCandidate = Select-ApproveButtonCandidate -ButtonInfos @($buttonInfos)
-    if ($null -ne $uiaCandidate) {
-        return $uiaCandidate
+    return Select-ApproveButtonCandidate -ButtonInfos @($buttonInfos)
+}
+
+function Find-ApproveButtonCandidateWithFallback {
+    param(
+        [scriptblock]$UiAutomationFinder = { Find-ApproveButtonCandidateByUiAutomation },
+        [scriptblock]$ScreenshotFinder = { Find-ApproveButtonCandidateByScreenshot }
+    )
+
+    try {
+        $uiaCandidate = & $UiAutomationFinder
+        if ($null -ne $uiaCandidate) {
+            return $uiaCandidate
+        }
+    } catch {
+        Write-Warning ("UI Automation scan failed. Trying screenshot fallback. {0}" -f $_.Exception.Message)
     }
 
-    return Find-ApproveButtonCandidateByScreenshot
+    try {
+        return (& $ScreenshotFinder)
+    } catch {
+        Write-Warning ("Screenshot fallback failed. {0}" -f $_.Exception.Message)
+        return $null
+    }
+}
+
+function Find-ApproveButtonCandidate {
+    return Find-ApproveButtonCandidateWithFallback
 }
 
 function Import-MouseApi {

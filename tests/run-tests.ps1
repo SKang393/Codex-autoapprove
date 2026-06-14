@@ -66,6 +66,20 @@ $noButtonResult = Invoke-ApproveScanIteration `
 Assert-Equal $noButtonResult.Clicked $false 'A scan should not click when no session approval button exists.'
 Assert-Equal $scanClicks.Count 1 'A scan without a matching button should not add another click.'
 
+$fallbackCandidate = [pscustomobject]@{
+    Name = 'Approve for session'
+    IsEnabled = $true
+    Source = 'ScreenshotLayout'
+    Bounds = [pscustomobject]@{ Left = 300; Top = 400; Width = 76; Height = 20 }
+}
+
+$fallbackResult = Find-ApproveButtonCandidateWithFallback `
+    -UiAutomationFinder { throw 'UI Automation tree changed' } `
+    -ScreenshotFinder { $fallbackCandidate }
+
+Assert-Equal $fallbackResult.Source 'ScreenshotLayout' 'UI Automation failures should fall back to screenshot layout detection.'
+Assert-Equal $fallbackResult.Bounds.Left 300 'Fallback candidate should be returned when UI Automation throws.'
+
 Add-Type -AssemblyName System.Drawing
 $bitmap = New-Object System.Drawing.Bitmap(500, 260)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)

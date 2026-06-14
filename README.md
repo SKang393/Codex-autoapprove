@@ -4,7 +4,7 @@ Small Windows helper for clicking the Codex `Approve for session` button wheneve
 
 ## Status
 
-- Current release: `v1.0.0`
+- Current release: `v1.0.1`
 - Platform: Windows
 - License: Apache License 2.0
 
@@ -57,6 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 - `v0.1.0`: Initial lightweight one-shot clicker using Windows UI Automation.
 - `v0.2.0`: Persistent mode that checks every 30 seconds until stopped.
 - `v1.0.0`: Release build with UI Automation plus visible notification-layout fallback for Windows approval notifications.
+- `v1.0.1`: Handles transient Windows UI Automation `FindAll` failures by continuing to screenshot-layout fallback instead of crashing.
 
 ## Safety Disclaimer
 

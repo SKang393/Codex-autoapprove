@@ -1,5 +1,15 @@
 # Release Notes
 
+## v1.0.1 - 2026-06-14
+
+Patch release for runtime stability.
+
+### Fixed
+
+- Catches transient Windows UI Automation `FindAll` failures, including `ElementNotAvailableException` and unrecognized UI Automation errors.
+- Continues to screenshot-layout fallback when the Windows UI Automation tree changes while scanning.
+- Keeps the persistent loop alive instead of stopping on the UI Automation exception.
+
 ## v1.0.0 - 2026-06-14
 
 Initial public release for `SKang393/Codex-autoapprove`.
