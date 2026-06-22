@@ -91,6 +91,83 @@ function Get-ApproveIntervalOptions {
     )
 }
 
+function Get-StartWithWindowsValueName {
+    return 'CodexAutoApprove'
+}
+
+function Get-StartWithWindowsRegistryPath {
+    return 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+}
+
+function Get-StartWithWindowsCommand {
+    param([Parameter(Mandatory)][string]$AppRoot)
+
+    $guiScriptPath = Join-Path $AppRoot 'CodexAutoApproveGui.ps1'
+    return 'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -StartMinimized' -f $guiScriptPath
+}
+
+function Test-StartWithWindowsEnabled {
+    param([Parameter(Mandatory)][string]$AppRoot)
+
+    $registryPath = Get-StartWithWindowsRegistryPath
+    $valueName = Get-StartWithWindowsValueName
+    if (-not (Test-Path $registryPath)) {
+        return $false
+    }
+
+    $item = Get-ItemProperty -LiteralPath $registryPath -Name $valueName -ErrorAction SilentlyContinue
+    if ($null -eq $item) {
+        return $false
+    }
+
+    $property = $item.PSObject.Properties[$valueName]
+    if ($null -eq $property) {
+        return $false
+    }
+
+    return ([string]$property.Value -eq (Get-StartWithWindowsCommand -AppRoot $AppRoot))
+}
+
+function Set-StartWithWindowsEnabled {
+    param(
+        [Parameter(Mandatory)][bool]$Enabled,
+        [Parameter(Mandatory)][string]$AppRoot
+    )
+
+    $registryPath = Get-StartWithWindowsRegistryPath
+    $valueName = Get-StartWithWindowsValueName
+
+    if ($Enabled) {
+        if (-not (Test-Path $registryPath)) {
+            New-Item -Path $registryPath -Force | Out-Null
+        }
+
+        $command = Get-StartWithWindowsCommand -AppRoot $AppRoot
+        $item = Get-ItemProperty -LiteralPath $registryPath -Name $valueName -ErrorAction SilentlyContinue
+        $property = $null
+        if ($null -ne $item) {
+            $property = $item.PSObject.Properties[$valueName]
+        }
+
+        if ($null -eq $property) {
+            New-ItemProperty -LiteralPath $registryPath -Name $valueName -Value $command -PropertyType String -Force | Out-Null
+        } else {
+            Set-ItemProperty -LiteralPath $registryPath -Name $valueName -Value $command
+        }
+
+        return
+    }
+
+    if (-not (Test-Path $registryPath)) {
+        return
+    }
+
+    $item = Get-ItemProperty -LiteralPath $registryPath -Name $valueName -ErrorAction SilentlyContinue
+    if ($null -ne $item -and $null -ne $item.PSObject.Properties[$valueName]) {
+        Remove-ItemProperty -LiteralPath $registryPath -Name $valueName -Force
+    }
+}
+
 function Import-NotificationLayoutScannerApi {
     Add-Type -AssemblyName System.Drawing
 

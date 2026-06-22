@@ -90,6 +90,31 @@ Assert-Equal $intervalOptions[2].Seconds 300 '5 minute option should map to 300.
 Assert-Equal $intervalOptions[3].Seconds 1800 '30 minute option should map to 1800.'
 Assert-Equal $intervalOptions[4].Seconds 3600 '1 hour option should map to 3600.'
 
+$startupValueName = Get-StartWithWindowsValueName
+Assert-Equal $startupValueName 'CodexAutoApprove' 'Startup registry value should use the app name.'
+
+$startupRegistryPath = Get-StartWithWindowsRegistryPath
+Assert-Equal $startupRegistryPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' 'Startup should use the current-user Windows Run registry key.'
+
+$startupCommand = Get-StartWithWindowsCommand -AppRoot 'C:\Test App'
+foreach ($expectedPart in @('powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', 'CodexAutoApproveGui.ps1', '-StartMinimized')) {
+    if ($startupCommand -notmatch [regex]::Escape($expectedPart)) {
+        throw "Startup command should include '$expectedPart'. Command: $startupCommand"
+    }
+}
+
+if ($startupCommand -notmatch '"C:\\Test App\\CodexAutoApproveGui\.ps1"') {
+    throw "Startup command should quote the GUI script path. Command: $startupCommand"
+}
+
+$guiScriptPath = Join-Path $repoRoot 'CodexAutoApproveGui.ps1'
+$guiScript = Get-Content $guiScriptPath -Raw
+foreach ($expectedGuiPart in @('Start with Windows', 'Test-StartWithWindowsEnabled', 'Set-StartWithWindowsEnabled')) {
+    if ($guiScript -notmatch [regex]::Escape($expectedGuiPart)) {
+        throw "GUI should expose startup toggle wiring for '$expectedGuiPart'."
+    }
+}
+
 $hiddenLauncherPath = Join-Path $repoRoot 'Start Codex Auto Approve GUI.vbs'
 if (-not (Test-Path $hiddenLauncherPath)) {
     throw 'Hidden GUI launcher should exist.'

@@ -4,7 +4,7 @@ Small Windows helper for clicking the Codex `Approve for session` button wheneve
 
 ## Status
 
-- Current release: `v1.1.0`
+- Current release: `v1.2.0`
 - Platform: Windows
 - License: Apache License 2.0
 
@@ -24,6 +24,8 @@ The GUI lets you pick one of these scan intervals:
 - 1 hour
 
 Click `Start` to begin scanning. Use `Hide to tray` or minimize the window to keep the program running in the system tray. Double-click the tray icon to show the GUI again. Use the tray menu or the `Exit` button to fully close it.
+
+Turn on `Start with Windows` if you want the GUI to launch automatically when you sign in. It uses the current user's Windows startup setting, starts minimized to the system tray, and does not require administrator permission. Turn the checkbox off to remove the startup entry.
 
 Command-line launch:
 
@@ -66,7 +68,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\CodexAutoApproveGui.ps1
 Build wrapped and unwrapped release packages:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version v1.1.0
+powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version v1.2.0
 ```
 
 Run tests:
@@ -88,6 +90,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 - `v1.0.0`: Release build with UI Automation plus visible notification-layout fallback for Windows approval notifications.
 - `v1.0.1`: Handles transient Windows UI Automation `FindAll` failures by continuing to screenshot-layout fallback instead of crashing.
 - `v1.1.0`: Adds Windows GUI, fixed interval picker, system tray background mode, hidden wrapped launcher, visible unwrapped launcher, and wrapped/unwrapped release packages.
+- `v1.2.0`: Adds a GUI `Start with Windows` toggle that starts the app minimized to the system tray through the current-user Windows startup setting.
 
 ## Safety Disclaimer
 
@@ -99,8 +102,8 @@ See [RELEASE.md](RELEASE.md) for release notes.
 
 The release package builder creates:
 
-- `dist/CodexAutoApprove-v1.1.0-wrapped.zip`: GUI plus `.vbs` launcher that hides the command window.
-- `dist/CodexAutoApprove-v1.1.0-unwrapped.zip`: GUI and command-line launchers with visible command windows.
+- `dist/CodexAutoApprove-v1.2.0-wrapped.zip`: GUI plus `.vbs` launcher that hides the command window.
+- `dist/CodexAutoApprove-v1.2.0-unwrapped.zip`: GUI and command-line launchers with visible command windows.
 
 ## License
 

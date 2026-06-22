@@ -1,5 +1,24 @@
 # Release Notes
 
+## v1.2.0 - 2026-06-22
+
+Startup convenience update.
+
+### Added
+
+- GUI `Start with Windows` checkbox for launching Codex Auto Approve when the current user signs in.
+- Startup launch runs PowerShell hidden and opens the GUI minimized to the system tray.
+
+### Notes
+
+- The startup setting uses `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run`, so it is per-user and does not require administrator permission.
+- Windows notifications for Codex must still be enabled and visible for auto approval to work.
+
+### Release Artifacts
+
+- `CodexAutoApprove-v1.2.0-wrapped.zip`
+- `CodexAutoApprove-v1.2.0-unwrapped.zip`
+
 ## v1.1.0 - 2026-06-14
 
 GUI and release packaging update.

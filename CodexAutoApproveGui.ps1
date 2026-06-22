@@ -41,7 +41,7 @@ function Start-CodexAutoApproveGui {
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
     $form.MinimizeBox = $true
-    $form.ClientSize = New-Object System.Drawing.Size(420, 230)
+    $form.ClientSize = New-Object System.Drawing.Size(420, 265)
     $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 
     $titleLabel = New-Object System.Windows.Forms.Label
@@ -69,34 +69,40 @@ function Start-CodexAutoApproveGui {
     $intervalCombo.SelectedIndex = 0
     $form.Controls.Add($intervalCombo)
 
+    $startupCheckBox = New-Object System.Windows.Forms.CheckBox
+    $startupCheckBox.Text = 'Start with Windows'
+    $startupCheckBox.Location = New-Object System.Drawing.Point(145, 91)
+    $startupCheckBox.Size = New-Object System.Drawing.Size(180, 24)
+    $form.Controls.Add($startupCheckBox)
+
     $statusLabel = New-Object System.Windows.Forms.Label
     $statusLabel.Text = 'Stopped'
-    $statusLabel.Location = New-Object System.Drawing.Point(20, 103)
+    $statusLabel.Location = New-Object System.Drawing.Point(20, 130)
     $statusLabel.Size = New-Object System.Drawing.Size(370, 44)
     $form.Controls.Add($statusLabel)
 
     $startButton = New-Object System.Windows.Forms.Button
     $startButton.Text = 'Start'
-    $startButton.Location = New-Object System.Drawing.Point(22, 165)
+    $startButton.Location = New-Object System.Drawing.Point(22, 205)
     $startButton.Size = New-Object System.Drawing.Size(82, 32)
     $form.Controls.Add($startButton)
 
     $stopButton = New-Object System.Windows.Forms.Button
     $stopButton.Text = 'Stop'
     $stopButton.Enabled = $false
-    $stopButton.Location = New-Object System.Drawing.Point(116, 165)
+    $stopButton.Location = New-Object System.Drawing.Point(116, 205)
     $stopButton.Size = New-Object System.Drawing.Size(82, 32)
     $form.Controls.Add($stopButton)
 
     $trayButton = New-Object System.Windows.Forms.Button
     $trayButton.Text = 'Hide to tray'
-    $trayButton.Location = New-Object System.Drawing.Point(210, 165)
+    $trayButton.Location = New-Object System.Drawing.Point(210, 205)
     $trayButton.Size = New-Object System.Drawing.Size(100, 32)
     $form.Controls.Add($trayButton)
 
     $exitButton = New-Object System.Windows.Forms.Button
     $exitButton.Text = 'Exit'
-    $exitButton.Location = New-Object System.Drawing.Point(322, 165)
+    $exitButton.Location = New-Object System.Drawing.Point(322, 205)
     $exitButton.Size = New-Object System.Drawing.Size(70, 32)
     $form.Controls.Add($exitButton)
 
@@ -117,6 +123,7 @@ function Start-CodexAutoApproveGui {
 
     $script:isRunning = $false
     $script:allowExit = $false
+    $script:isUpdatingStartupCheckBox = $false
 
     $updateUi = {
         $intervalCombo.Enabled = -not $script:isRunning
@@ -180,6 +187,33 @@ function Start-CodexAutoApproveGui {
         $notifyIcon.Visible = $true
     }
 
+    $refreshStartupCheckBox = {
+        $script:isUpdatingStartupCheckBox = $true
+        try {
+            $startupCheckBox.Checked = Test-StartWithWindowsEnabled -AppRoot $script:AppRoot
+        } finally {
+            $script:isUpdatingStartupCheckBox = $false
+        }
+    }
+
+    $setStartupAction = {
+        if ($script:isUpdatingStartupCheckBox) {
+            return
+        }
+
+        try {
+            Set-StartWithWindowsEnabled -Enabled ([bool]$startupCheckBox.Checked) -AppRoot $script:AppRoot
+            if ($startupCheckBox.Checked) {
+                $statusLabel.Text = 'Start with Windows is enabled.'
+            } else {
+                $statusLabel.Text = 'Start with Windows is disabled.'
+            }
+        } catch {
+            $statusLabel.Text = "Startup setting error: $($_.Exception.Message)"
+            & $refreshStartupCheckBox
+        }
+    }
+
     $exitAction = {
         $script:allowExit = $true
         $timer.Stop()
@@ -191,6 +225,7 @@ function Start-CodexAutoApproveGui {
     $timer.Add_Tick($scanOnce)
     $startButton.Add_Click($startAction)
     $stopButton.Add_Click($stopAction)
+    $startupCheckBox.Add_CheckedChanged($setStartupAction)
     $trayButton.Add_Click($hideAction)
     $exitButton.Add_Click($exitAction)
     $showItem.Add_Click($showAction)
@@ -219,6 +254,7 @@ function Start-CodexAutoApproveGui {
         $notifyIcon.Dispose()
     })
 
+    & $refreshStartupCheckBox
     & $updateUi
     if ($StartMinimized) {
         $form.WindowState = [System.Windows.Forms.FormWindowState]::Minimized
@@ -232,6 +268,10 @@ if ($SelfTest) {
     $options = @(Get-ApproveIntervalOptions)
     if ($options.Count -ne 5 -or $options[0].Seconds -ne 30 -or $options[4].Seconds -ne 3600) {
         throw 'GUI interval options are not valid.'
+    }
+    $startupCommand = Get-StartWithWindowsCommand -AppRoot $script:AppRoot
+    if ($startupCommand -notmatch 'CodexAutoApproveGui\.ps1' -or $startupCommand -notmatch '-StartMinimized') {
+        throw 'GUI startup command is not valid.'
     }
     Write-Host 'GUI self-test passed.'
     exit 0
